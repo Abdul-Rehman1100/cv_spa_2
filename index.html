@@ -6,13 +6,16 @@
   <meta name="theme-color" content="#590D22">
   <meta name="description" content="Explore Abdul-Rehman's interactive developer CV.">
   <title>Abdul-Rehman.exe — DevWorld</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/cv-data.js" defer></script>
   <script src="js/game.js" defer></script>
 </head>
 <body>
   <main class="game-shell" aria-label="Abdul-Rehman's interactive CV game">
-    <canvas id="world" tabindex="0" aria-label="Game world. Use WASD or arrow keys to explore, then press E to inspect nearby places.">
+    <canvas id="world" tabindex="0" aria-label="Side-scrolling driving game. Use right or D to drive forward, left or A to reverse, and down or S to brake. Reach portfolio checkpoints to reveal their sections automatically.">
       Your browser does not support canvas. Use the destinations menu to explore Abdul-Rehman's CV.
     </canvas>
 
@@ -22,15 +25,15 @@
         <span><strong>ABDUL-REHMAN</strong><small>DEVWORLD / LAHORE, PK</small></span>
       </a>
       <div class="hud-actions">
-        <span class="discoveries" id="discovery-count">0 / 7 DISCOVERED</span>
-        <button class="hud-button" id="map-button" type="button" aria-haspopup="dialog">⌖ <span>DESTINATIONS</span></button>
+        <span class="discoveries" id="discovery-count">0 / 6 VISITED</span>
+        <button class="hud-button" id="map-button" type="button" aria-haspopup="dialog">⌖ <span>PORTFOLIO MENU</span></button>
       </div>
     </header>
 
     <aside class="control-hint" id="control-hint" aria-label="Game controls">
-      <span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span>
-      <span class="hint-copy">MOVE</span>
-      <span class="keycap keycap-wide">E</span><span class="hint-copy">INSPECT</span>
+      <span class="keycap">→</span><span class="hint-copy">DRIVE</span>
+      <span class="keycap">←</span><span class="hint-copy">REVERSE</span>
+      <span class="keycap">↓</span><span class="hint-copy">BRAKE</span>
     </aside>
     <div class="nearby-prompt" id="nearby-prompt" aria-live="polite" hidden>
       <span class="keycap keycap-wide">E</span><span id="nearby-label">Inspect</span>
@@ -38,10 +41,10 @@
 
     <div class="touch-controls" id="touch-controls" aria-label="Touch controls">
       <div class="dpad" aria-label="Directional controls">
-        <button type="button" data-dir="up" aria-label="Move up">▲</button>
-        <button type="button" data-dir="left" aria-label="Move left">◀</button>
-        <button type="button" data-dir="down" aria-label="Move down">▼</button>
-        <button type="button" data-dir="right" aria-label="Move right">▶</button>
+        <button type="button" data-dir="up" aria-label="Drive forward">▲</button>
+        <button type="button" data-dir="left" aria-label="Reverse">◀</button>
+        <button type="button" data-dir="down" aria-label="Brake">▼</button>
+        <button type="button" data-dir="right" aria-label="Drive forward">▶</button>
       </div>
       <button class="interact-button" id="touch-interact" type="button">INSPECT</button>
     </div>
@@ -50,9 +53,11 @@
       <div class="start-card">
         <div class="eyebrow"><span class="status-dot"></span> A SMALL WORLD, A REAL CV</div>
         <h1 id="game-title">ABDUL-<span>REHMAN</span><b>.EXE</b></h1>
-        <p>Hi, I’m Abdul-Rehman. I’m a CS student turning everyday problems into useful projects. Explore what I’m learning, building, and working toward.</p>
-        <button class="primary-button" id="start-button" type="button">START EXPLORING <span aria-hidden="true">→</span></button>
-        <div class="start-hint"><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> or arrows to move <i>·</i> <span class="keycap keycap-wide">E</span> to inspect <i>·</i> Map for a quick visit</div>
+        <p class="start-role">COMPUTER SCIENCE STUDENT <span>·</span> LAHORE, PAKISTAN</p>
+        <p>Hi, I’m Abdul-Rehman. I build practical projects that solve everyday problems, and I’m currently studying Computer Science at Qarshi University.</p>
+        <div class="start-actions"><button class="primary-button" id="start-button" type="button">ENTER THE WORLD <span aria-hidden="true">→</span></button><button class="secondary-button" id="browse-button" type="button">BROWSE PORTFOLIO</button></div>
+        <div class="start-hint">Hold <span class="keycap">→</span> or <span class="keycap">D</span> to drive · <span class="keycap">←</span> or <span class="keycap">A</span> to reverse · <span class="keycap">↓</span> to brake. Reach checkpoints to reveal each section, or use the menu to jump around.</div>
+        <a class="start-contact" href="mailto:abdulrehmanmujahid1100@gmail.com">Have an opportunity? Get in touch <span aria-hidden="true">↗</span></a>
       </div>
       <span class="start-orbit orbit-one" aria-hidden="true"></span>
       <span class="start-orbit orbit-two" aria-hidden="true"></span>
@@ -67,8 +72,12 @@
         <h2 id="panel-title"></h2>
         <div class="panel-content" id="panel-content"></div>
         <div class="panel-footer">
-          <div class="page-dots" id="page-dots" aria-label="Panel pages"></div>
-          <div class="panel-navigation"><button class="page-button" id="prev-page" type="button" aria-label="Previous page">←</button><span id="page-count">01 / 01</span><button class="page-button" id="next-page" type="button" aria-label="Next page">→</button></div>
+          <nav class="section-navigation" aria-label="Portfolio section navigation">
+            <button class="section-button" id="prev-section" type="button"><span aria-hidden="true">←</span><span id="prev-section-label">PREVIOUS STOP</span></button>
+            <button class="section-button section-back" id="back-to-road" type="button">BACK TO ROAD</button>
+            <button class="section-button" id="next-section" type="button"><span id="next-section-label">NEXT STOP</span><span aria-hidden="true">→</span></button>
+          </nav>
+          <div class="panel-page-navigation"><div class="page-dots" id="page-dots" aria-label="Pages in this section"></div><div class="panel-navigation"><button class="page-button" id="prev-page" type="button" aria-label="Previous page in this section">←</button><span id="page-count">01 / 01</span><button class="page-button" id="next-page" type="button" aria-label="Next page in this section">→</button></div></div>
         </div>
       </article>
     </section>
@@ -77,9 +86,9 @@
       <article class="map-panel" role="dialog" aria-modal="true" aria-labelledby="map-title">
         <div class="panel-topline"><span class="panel-kicker"><span class="status-dot"></span> POCKET MAP</span><button class="close-button" id="close-map" type="button" aria-label="Close destinations">×</button></div>
         <h2 id="map-title">Choose a destination</h2>
-        <p class="map-intro">Pick a place to explore, or jump straight to what you came to see.</p>
+        <p class="map-intro">Choose a section to jump straight to it. You can return here anytime with the portfolio menu.</p>
         <nav class="destination-list" id="destination-list" aria-label="CV destinations"></nav>
-        <div class="map-footnote">All destinations are open. Your discoveries: <strong id="map-discovery-count">0 / 7</strong></div>
+        <div class="map-footnote">Every section is open. Visited: <strong id="map-discovery-count">0 / 6</strong></div>
       </article>
     </section>
 

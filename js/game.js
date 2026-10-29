@@ -10,10 +10,9 @@
   const data = window.CV_DATA;
   const keys = new Set();
   const discovered = new Set();
+  const checkpointLatch = new Set();
   let portraitLayout = window.innerHeight > window.innerWidth;
-  const player = portraitLayout
-    ? { x: 300, y: 160, facing: "down", moving: false, step: 0 }
-    : { x: 480, y: 395, facing: "down", moving: false, step: 0 };
+  const player = { x: 100, y: 0, speed: 0, moving: false, step: 0 };
   const pressedTouch = new Set();
   const solids = [
     { x: 44, y: 136, w: 42, h: 42 }, { x: 872, y: 142, w: 42, h: 42 },
@@ -43,7 +42,24 @@
   let currentPage = 0;
   let previousFocus = null;
   let playerNearby = null;
+  let activeStopKey = null;
   let elapsed = 0;
+  let overlayDriving = false;
+  let copyReveal = 1;
+  const checkpointSpacing = .42;
+  const routeStops = data.destinations.flatMap((destination) =>
+    data.panels[destination.id].pages.map((_, pageIndex) => ({
+      key: `${destination.id}:${pageIndex}`,
+      destination,
+      pageIndex
+    }))
+  );
+  const aspectRatio = () => window.innerWidth / Math.max(1, window.innerHeight);
+  const sceneWidth = () => aspectRatio() > W / H ? H * aspectRatio() : W;
+  const sceneHeight = () => aspectRatio() > W / H ? H : W / aspectRatio();
+  const roadWidth = () => sceneWidth() * (.45 + (routeStops.length - 1) * checkpointSpacing + .7);
+  const groundY = (x) => sceneHeight() * .73 + Math.sin(x * .006) * sceneHeight() * .035 + Math.sin(x * .014 + 1) * sceneHeight() * .018;
+  const cameraX = () => Math.max(0, Math.min(roadWidth() - sceneWidth(), player.x - sceneWidth() * .34));
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -52,16 +68,16 @@
     const nextPortrait = window.innerHeight > window.innerWidth;
     if (nextPortrait !== portraitLayout) {
       portraitLayout = nextPortrait;
-      player.x = portraitLayout ? PORTRAIT_W / 2 : W / 2;
-      player.y = portraitLayout ? 160 : 395;
+      player.x = Math.max(35, player.x);
+      player.y = groundY(player.x) - 24;
       keys.clear();
       pressedTouch.clear();
     }
-    const sceneWidth = portraitLayout ? PORTRAIT_W : W;
-    const sceneHeight = portraitLayout ? PORTRAIT_H : H;
-    const scale = Math.min(window.innerWidth / sceneWidth, window.innerHeight / sceneHeight);
-    const offsetX = (window.innerWidth - sceneWidth * scale) / 2;
-    const offsetY = (window.innerHeight - sceneHeight * scale) / 2;
+    const worldW = sceneWidth();
+    const worldH = sceneHeight();
+    const scale = Math.min(window.innerWidth / worldW, window.innerHeight / worldH);
+    const offsetX = (window.innerWidth - worldW * scale) / 2;
+    const offsetY = (window.innerHeight - worldH * scale) / 2;
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, offsetX * dpr, offsetY * dpr);
     ctx.imageSmoothingEnabled = false;
   }
@@ -89,8 +105,168 @@
   }
 
   function drawWorld() {
-    if (portraitLayout) drawPortraitWorld();
-    else drawLandscapeWorld();
+    drawDrivingWorld();
+  }
+
+  function drawDrivingWorld() {
+    const sw = sceneWidth();
+    const sh = sceneHeight();
+    const camera = cameraX();
+    const sky = ctx.createLinearGradient(0, 0, 0, sh);
+    sky.addColorStop(0, "#250817");
+    sky.addColorStop(.58, "#7d183a");
+    sky.addColorStop(1, "#f08086");
+    rect(0, 0, sw, sh, "#210713");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, sw, sh);
+    // Pixel stars and layered distant hills create a side-scrolling arcade backdrop.
+    for (let i = 0; i < 50; i++) {
+      const x = ((i * 181 + 37 - camera * .18) % sw + sw) % sw;
+      const y = (i * 67 + 19) % Math.floor(sh * .38);
+      ctx.globalAlpha = .45 + .35 * Math.sin(elapsed + i);
+      rect(x, y, i % 8 === 0 ? 3 : 2, i % 8 === 0 ? 3 : 2, i % 3 === 0 ? "#FFB3C1" : "#FFF0F3");
+    }
+    ctx.globalAlpha = 1;
+    drawCheckpointCopy(sw, sh);
+    for (let layer = 0; layer < 2; layer++) {
+      ctx.beginPath();
+      ctx.moveTo(0, sh);
+      for (let sx = -20; sx <= sw + 20; sx += 20) {
+        const wx = sx + camera * (layer ? .24 : .12);
+        const hy = sh * (.57 + layer * .08) + Math.sin(wx * (layer ? .005 : .003) + layer) * sh * .055;
+        ctx.lineTo(sx, hy);
+      }
+      ctx.lineTo(sw, sh); ctx.closePath();
+      ctx.fillStyle = layer ? "#451024" : "#351020"; ctx.fill();
+    }
+    ctx.save();
+    ctx.translate(-camera, 0);
+    ctx.beginPath();
+    ctx.moveTo(0, sh);
+    for (let x = Math.floor(camera / 8) * 8; x <= camera + sw + 16; x += 8) ctx.lineTo(x, groundY(x));
+    ctx.lineTo(camera + sw, sh); ctx.closePath();
+    ctx.fillStyle = "#52142b"; ctx.fill();
+    ctx.beginPath();
+    for (let x = Math.floor(camera / 8) * 8; x <= camera + sw + 16; x += 8) {
+      const y = groundY(x);
+      if (x === Math.floor(camera / 8) * 8) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = "#ff758f"; ctx.lineWidth = 4; ctx.stroke();
+    for (let x = Math.floor(camera / 48) * 48; x < camera + sw + 48; x += 48) {
+      const y = groundY(x);
+      rect(x, y + 22, 25, 5, "rgba(255,179,193,.18)");
+    }
+    drawRoadside();
+    drawStations();
+    drawPlayer();
+    ctx.restore();
+    // Fixed arcade HUD stays readable while the terrain scrolls beneath it.
+    rect(0, sh - 6, sw, 6, "#260817");
+  }
+
+  function drawCheckpointCopy(sw, sh) {
+    if (!currentPanel || $("panel-backdrop").hidden || !$("info-panel").classList.contains("canvas-reading")) return;
+    const reveal = Math.max(0, Math.min(1, copyReveal));
+    if (reveal <= 0) return;
+    const activeStop = routeStops.find((stop) => stop.key === activeStopKey);
+    const activeStopX = activeStop ? destinationPosition(activeStop).x : null;
+    const passedBy = activeStopX === null ? 0 : Math.max(0, player.speed < -1 ? activeStopX - player.x : player.x - activeStopX);
+    const fadeStart = sw * .03;
+    const fadeLength = sw * .18;
+    const departureFade = activeStopX === null ? 1 : Math.max(0, Math.min(1, 1 - Math.max(0, passedBy - fadeStart) / fadeLength));
+    if (departureFade <= 0) return;
+    const category = $("panel-category").textContent.trim();
+    const title = $("panel-title").textContent.trim();
+    const scratch = document.createElement("div");
+    scratch.innerHTML = $("panel-content").innerHTML
+      .replace(/<br\s*\/?\s*>/gi, " ")
+      .replace(/<\/b>/gi, " — ")
+      .replace(/<\/(strong|span)>/gi, " ")
+      .replace(/<\/(p|div|h[1-6]|li)>/gi, "\n");
+    const paragraphs = (scratch.textContent || "").split(/\n+/).map((line) => line.replace(/\s+/g, " ").trim()).filter(Boolean);
+    const left = sw * .115;
+    const maxWidth = sw * .77;
+    const displayScale = Math.min(window.innerWidth / sw, window.innerHeight / sh);
+    const lift = (1 - reveal) * 34;
+    ctx.save();
+    ctx.globalAlpha = reveal * departureFade;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.shadowColor = "rgba(20,4,12,.42)";
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = "#ff8aa1";
+    ctx.font = `600 ${Math.max(12, 12 / displayScale)}px "DM Mono", Consolas, monospace`;
+    ctx.fillText(category.toUpperCase(), left, sh * .105 + lift);
+    ctx.fillStyle = "#fff0f3";
+    ctx.font = `700 ${Math.max(36, Math.min(80, 52 / displayScale))}px system-ui, sans-serif`;
+    ctx.fillText(title, left, sh * .16 + lift, maxWidth);
+    ctx.font = `400 ${Math.max(18, Math.min(38, 17 / displayScale))}px system-ui, sans-serif`;
+    ctx.fillStyle = "#fff0f3";
+    const fontSize = Math.max(18, Math.min(38, 17 / displayScale));
+    const lineHeight = fontSize * 1.55;
+    const maxLines = Math.max(2, Math.floor((sh * .56 - sh * .265) / lineHeight));
+    let lineY = sh * .265 + lift;
+    let linesDrawn = 0;
+    for (const paragraph of paragraphs) {
+      const words = paragraph.split(/\s+/);
+      let lineText = "";
+      for (const word of words) {
+        const candidate = lineText ? `${lineText} ${word}` : word;
+        if (ctx.measureText(candidate).width > maxWidth && lineText) {
+          ctx.fillText(lineText, left, lineY, maxWidth);
+          lineY += lineHeight;
+          linesDrawn++;
+          lineText = word;
+          if (linesDrawn >= maxLines) break;
+        } else lineText = candidate;
+      }
+      if (linesDrawn >= maxLines) break;
+      if (lineText) {
+        ctx.fillText(lineText, left, lineY, maxWidth);
+        lineY += lineHeight;
+        linesDrawn++;
+      }
+      if (linesDrawn >= maxLines) break;
+      lineY += lineHeight * .28;
+    }
+    ctx.restore();
+  }
+
+  function drawRoadside() {
+    if (cameraX() < 210) {
+      const y = groundY(85);
+      rect(36, y - 84, 10, 84, "#590d22");
+      rect(124, y - 84, 10, 84, "#590d22");
+      rect(36, y - 91, 98, 34, "#800f2f");
+      rect(41, y - 86, 88, 22, "#ff758f");
+      text("START", 85, y - 71, "#fff0f3", 12);
+      rect(43, y + 5, 12, 12, "#ffb3c1");
+      rect(55, y + 5, 12, 12, "#590d22");
+      rect(67, y + 5, 12, 12, "#ffb3c1");
+      rect(79, y + 5, 12, 12, "#590d22");
+      rect(91, y + 5, 12, 12, "#ffb3c1");
+      rect(103, y + 5, 12, 12, "#590d22");
+      rect(115, y + 5, 12, 12, "#ffb3c1");
+    }
+    for (let i = 0; i < Math.ceil(roadWidth() / 185); i++) {
+      const x = 80 + i * 185;
+      if (x < cameraX() - 40 || x > cameraX() + sceneWidth() + 40) continue;
+      const y = groundY(x);
+      rect(x - 4, y - 22, 8, 22, "#68162f");
+      rect(x - 14, y - 39, 28, 19, "#a52a4a");
+      rect(x - 9, y - 35, 18, 11, "#ffb3c1");
+    }
+    const finishX = roadWidth() - 42;
+    if (finishX > cameraX() - 40 && finishX < cameraX() + sceneWidth() + 40) {
+      const y = groundY(finishX);
+      rect(finishX - 5, y - 98, 10, 98, "#590d22");
+      rect(finishX - 48, y - 105, 96, 31, "#800f2f");
+      rect(finishX - 43, y - 100, 86, 21, "#ff758f");
+      text("FINISH", finishX, y - 86, "#fff0f3", 12);
+      rect(finishX - 16, y + 5, 8, 13, "#ffb3c1");
+      rect(finishX, y + 5, 8, 13, "#590d22");
+      rect(finishX + 8, y + 5, 8, 13, "#ffb3c1");
+    }
   }
 
   function drawPortraitWorld() {
@@ -386,10 +562,24 @@
   }
 
   function drawStations() {
-    for (const destination of data.destinations) {
-      const nearby = playerNearby && playerNearby.id === destination.id;
+    for (const stop of routeStops) {
+      const { destination, pageIndex } = stop;
+      const nearby = playerNearby?.key === stop.key;
       const found = discovered.has(destination.id);
-      const { x, y } = destinationPosition(destination);
+      const { x, y } = destinationPosition(stop);
+      if (pageIndex > 0) {
+        const pulse = nearby ? 9 + Math.sin(elapsed * 5) * 1.5 : 7;
+        ctx.fillStyle = found ? "#ffb3c1" : "#8a2c48";
+        ctx.shadowColor = nearby ? "#FF4D6D" : "transparent";
+        ctx.shadowBlur = nearby ? 12 : 0;
+        ctx.beginPath(); ctx.arc(x, y - 34, pulse, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#fff0f3";
+        ctx.font = '500 10px "DM Mono", Consolas, monospace';
+        ctx.textAlign = "center";
+        ctx.fillText(String(pageIndex + 1).padStart(2, "0"), x, y - 31);
+        continue;
+      }
       if (nearby) {
         const pulse = 17 + Math.sin(elapsed * 5) * 2;
         ctx.strokeStyle = "rgba(255,117,143,.55)";
@@ -400,9 +590,13 @@
         ctx.shadowColor = "#FF4D6D";
         ctx.shadowBlur = 12;
       }
-      rect(x - 10, y - 39, 20, 19, nearby ? "#C9184A" : "#5D1730");
-      rect(x - 8, y - 37, 16, 15, nearby ? "#FF4D6D" : "#8A2C48");
-      text(destination.icon, x, y - 29, "#FFF0F3", 11);
+      const label = destination.name.toUpperCase();
+      const labelSize = Math.max(12, Math.min(28, 14 / (window.innerWidth / sceneWidth())));
+      ctx.font = `500 ${labelSize}px "DM Mono", Consolas, monospace`;
+      const signWidth = Math.max(138, ctx.measureText(label).width + 28);
+      rect(x - signWidth / 2, y - 66, signWidth, 34, nearby ? "#C9184A" : "#5D1730");
+      rect(x - signWidth / 2 + 4, y - 62, signWidth - 8, 26, "#8A2C48");
+      text(label, x, y - 45, "#FFF0F3", labelSize);
       ctx.shadowBlur = 0;
       if (found) {
         ctx.fillStyle = "#FF4D6D";
@@ -414,26 +608,22 @@
   }
 
   function drawPlayer() {
-    const x = Math.round(player.x);
-    const y = Math.round(player.y);
-    const bob = player.moving ? Math.sin(player.step * 13) * 1.8 : Math.sin(elapsed * 2) * .8;
-    const py = Math.round(y + bob);
-    const movingFrame = player.moving && Math.floor(player.step * 9) % 2 === 0;
-    rect(x - 8, py + 13, 16, 3, "rgba(22,4,12,.45)");
-    rect(x - 6, py - 10, 12, 16, "#30101E");
-    rect(x - 5, py - 13, 10, 10, "#E4A58F");
-    rect(x - 6, py - 15, 12, 5, "#2A101A");
-    rect(x - 7, py - 12, 3, 6, "#2A101A");
-    rect(x - 3, py - 8, 2, 2, "#590D22");
-    rect(x + 2, py - 8, 2, 2, "#590D22");
-    rect(x - 7, py - 2, 14, 10, "#800F2F");
-    rect(x - 6, py - 1, 12, 8, "#C9184A");
-    rect(x - 3, py + 1, 6, 2, "#FFB3C1");
-    rect(x - 8, py, 2, 7, "#E4A58F");
-    rect(x + 6, py, 2, 7, "#E4A58F");
-    rect(x - 5 + (movingFrame ? 2 : 0), py + 8, 4, 5, "#26101A");
-    rect(x + 1 + (movingFrame ? -2 : 0), py + 8, 4, 5, "#26101A");
-    rect(x - 6, py - 16, 12, 2, "#FF758F");
+    const x = player.x;
+    const y = groundY(x) - 25;
+    player.y = y;
+    const tilt = Math.atan2(groundY(x + 10) - groundY(x - 10), 20);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(tilt);
+    const spin = player.moving ? elapsed * 9 : elapsed * 1.2;
+    for (const wx of [-21, 20]) {
+      ctx.fillStyle = "#210713"; ctx.beginPath(); ctx.arc(wx, 15, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#ffb3c1"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(wx, 15, 6, spin, spin + Math.PI * 1.5); ctx.stroke();
+      ctx.fillStyle = "#c9184a"; ctx.beginPath(); ctx.arc(wx, 15, 2, 0, Math.PI * 2); ctx.fill();
+    }
+    rect(-31, -11, 62, 22, "#590d22"); rect(-26, -16, 46, 13, "#c9184a");
+    rect(-8, -28, 21, 15, "#800f2f"); rect(-3, -25, 12, 8, "#ffccd5");
+    rect(20, -9, 10, 6, "#ffb3c1"); rect(-29, -7, 7, 7, "#ff4d6d");
+    rect(-24, -4, 39, 3, "rgba(255,240,243,.55)");
+    ctx.restore();
   }
 
   function overlapsSolid(x, y) {
@@ -445,47 +635,49 @@
     );
   }
 
-  function destinationPosition(destination) {
-    return portraitLayout ? destination.portrait : destination;
+  function destinationPosition(stop) {
+    const index = routeStops.indexOf(stop);
+    const x = sceneWidth() * .45 + index * sceneWidth() * checkpointSpacing;
+    return { x, y: groundY(x) - 25 };
   }
 
   function update(dt) {
-    let dx = 0;
-    let dy = 0;
-    if (keys.has("arrowleft") || keys.has("a") || pressedTouch.has("left")) dx -= 1;
-    if (keys.has("arrowright") || keys.has("d") || pressedTouch.has("right")) dx += 1;
-    if (keys.has("arrowup") || keys.has("w") || pressedTouch.has("up")) dy -= 1;
-    if (keys.has("arrowdown") || keys.has("s") || pressedTouch.has("down")) dy += 1;
-    const length = Math.hypot(dx, dy);
-    player.moving = length > 0;
-    if (length) {
-      dx /= length;
-      dy /= length;
-      player.step += dt;
-      if (Math.abs(dx) > Math.abs(dy)) player.facing = dx < 0 ? "left" : "right";
-      else player.facing = dy < 0 ? "up" : "down";
-      const speed = 140 * dt;
-      const sceneWidth = portraitLayout ? PORTRAIT_W : W;
-      const sceneHeight = portraitLayout ? PORTRAIT_H : H;
-      const minY = portraitLayout ? 130 : 214;
-      const nextX = Math.max(19, Math.min(sceneWidth - 19, player.x + dx * speed));
-      const nextY = Math.max(minY, Math.min(sceneHeight - 19, player.y + dy * speed));
-      if (!overlapsSolid(nextX, player.y)) player.x = nextX;
-      if (!overlapsSolid(player.x, nextY)) player.y = nextY;
+    const forward = keys.has("arrowright") || keys.has("d") || keys.has("arrowup") || keys.has("w") || keys.has(" ") || pressedTouch.has("right") || pressedTouch.has("up");
+    const reverse = keys.has("arrowleft") || keys.has("a") || pressedTouch.has("left");
+    const brake = keys.has("arrowdown") || keys.has("s") || pressedTouch.has("down");
+    const driveDirection = Number(forward) - Number(reverse);
+    if (driveDirection) player.speed = Math.max(-190, Math.min(260, player.speed + driveDirection * 300 * dt));
+    else player.speed = Math.sign(player.speed) * Math.max(0, Math.abs(player.speed) - 42 * dt);
+    if (brake) player.speed = Math.sign(player.speed) * Math.max(0, Math.abs(player.speed) - 420 * dt);
+    player.moving = Math.abs(player.speed) > 1;
+    if (player.moving) player.step += dt;
+    player.x = Math.max(35, Math.min(roadWidth() - 35, player.x + player.speed * dt));
+    if (player.x <= 35 || player.x >= roadWidth() - 35) player.speed = 0;
+    player.y = groundY(player.x) - 25;
+    const activeStop = routeStops.find((stop) => stop.key === activeStopKey);
+    if (activeStop && !$("panel-backdrop").hidden) {
+      const stopX = destinationPosition(activeStop).x;
+      const distancePastStop = player.speed < -1 ? stopX - player.x : player.x - stopX;
+      const departureFade = Math.max(0, Math.min(1, 1 - Math.max(0, distancePastStop - sceneWidth() * .03) / (sceneWidth() * .18)));
+      if (!$("info-panel").classList.contains("canvas-reading")) $("info-panel").style.opacity = String(departureFade);
+      if (distancePastStop > sceneWidth() * .25) closePanel(false);
     }
     playerNearby = null;
     let minDistance = 49;
-    for (const destination of data.destinations) {
-      const position = destinationPosition(destination);
+    for (const stop of routeStops) {
+      const { destination, pageIndex } = stop;
+      const position = destinationPosition(stop);
       const distance = Math.hypot(player.x - position.x, player.y - position.y);
+      if (distance > 130) checkpointLatch.delete(stop.key);
       if (distance < minDistance) {
-        playerNearby = destination;
+        playerNearby = stop;
         minDistance = distance;
       }
     }
-    if (playerNearby) {
+    if (playerNearby && $("panel-backdrop").hidden) {
       prompt.hidden = false;
-      promptLabel.textContent = `Inspect ${playerNearby.label}`;
+      promptLabel.textContent = `Checkpoint · ${playerNearby.destination.name} · ${playerNearby.pageIndex + 1}`;
+      if (!checkpointLatch.has(playerNearby.key)) openPanel(playerNearby.destination.id, canvas, playerNearby.pageIndex, playerNearby.key);
     } else {
       prompt.hidden = true;
     }
@@ -495,7 +687,10 @@
     const dt = Math.min((time - lastTime) / 1000 || 0, .04);
     lastTime = time;
     elapsed += dt;
-    if (running && $("panel-backdrop").hidden && $("map-backdrop").hidden) update(dt);
+    if (running && $("map-backdrop").hidden) {
+      update(dt);
+      copyReveal = Math.min(1, copyReveal + dt * 2.1);
+    }
     else {
       player.moving = false;
       prompt.hidden = true;
@@ -506,42 +701,69 @@
 
   function setDiscoveryCount() {
     const count = `${discovered.size} / ${data.destinations.length}`;
-    $("discovery-count").textContent = `${count} DISCOVERED`;
+    $("discovery-count").textContent = `${count} VISITED`;
     $("map-discovery-count").textContent = count;
   }
 
-  function openPanel(id, focusFrom = document.activeElement) {
+  function openPanel(id, focusFrom = document.activeElement, pageIndex = 0, stopKey = null) {
     const panel = data.panels[id];
     if (!panel) return;
     closeMap(false);
     currentPanel = panel;
-    currentPage = 0;
-    previousFocus = focusFrom;
+    currentPage = Math.max(0, Math.min(panel.pages.length - 1, pageIndex));
+    overlayDriving = running;
+    previousFocus = overlayDriving ? canvas : focusFrom;
     activeDestination = id;
+    copyReveal = 0;
+    $("info-panel").style.opacity = "";
     discovered.add(id);
-    playerNearby = null;
+    const reachedStop = stopKey || (playerNearby?.destination.id === id ? playerNearby.key : null);
+    activeStopKey = reachedStop;
+    if (reachedStop) checkpointLatch.add(reachedStop);
     prompt.hidden = true;
-    keys.clear();
-    pressedTouch.clear();
+    if (!overlayDriving) {
+      keys.clear();
+      pressedTouch.clear();
+    }
     $("panel-icon").textContent = panel.icon;
     $("panel-category").textContent = panel.category;
     $("panel-title").textContent = panel.title;
     $("panel-backdrop").hidden = false;
+    $("touch-controls").classList.add("reading");
+    $("info-panel").classList.toggle("auto-reading", overlayDriving);
+    $("info-panel").setAttribute("aria-modal", String(!overlayDriving));
+    $("info-panel").classList.remove("is-revealing");
+    void $("info-panel").offsetWidth;
+    $("info-panel").classList.add("is-revealing");
     renderPanelPage();
     setDiscoveryCount();
-    $("close-panel").focus();
+    if (overlayDriving) canvas.focus?.();
+    else $("close-panel").focus();
     $("game-announcer").textContent = `${panel.title} opened.`;
   }
 
   function renderPanelPage() {
-    $("panel-content").innerHTML = currentPanel.pages[currentPage];
+    const content = $("panel-content");
+    content.classList.remove("page-enter");
+    void content.offsetWidth;
+    content.innerHTML = currentPanel.pages[currentPage];
+    content.classList.add("page-enter");
     $("info-panel").classList.toggle("contact-panel", activeDestination === "contact");
-    $("info-panel").classList.toggle("website-panel", activeDestination === "work");
+    $("info-panel").classList.toggle("website-panel", activeDestination === "work" || content.querySelector(".website-showcase") !== null);
     $("info-panel").classList.toggle("goals-panel", activeDestination === "goals");
     $("info-panel").classList.toggle("projects-panel", activeDestination === "current");
+    const canvasReadable = !content.querySelector("a, button, input, textarea, select, iframe, form");
+    $("info-panel").classList.toggle("canvas-reading", overlayDriving && canvasReadable);
     const pageTotal = currentPanel.pages.length;
     $("page-count").textContent = `${String(currentPage + 1).padStart(2, "0")} / ${String(pageTotal).padStart(2, "0")}`;
     $("panel-count").textContent = String(data.destinations.findIndex((item) => item.id === activeDestination) + 1).padStart(2, "0");
+    const sectionIndex = data.destinations.findIndex((item) => item.id === activeDestination);
+    const previousSection = data.destinations[sectionIndex - 1];
+    const nextSection = data.destinations[sectionIndex + 1];
+    $("prev-section").disabled = !previousSection;
+    $("next-section").disabled = !nextSection;
+    $("prev-section-label").textContent = previousSection ? previousSection.name.toUpperCase() : "START";
+    $("next-section-label").textContent = nextSection ? nextSection.name.toUpperCase() : "FINISH";
     $("prev-page").disabled = currentPage === 0;
     $("next-page").disabled = currentPage >= pageTotal - 1;
     const dots = $("page-dots");
@@ -556,15 +778,22 @@
   function closePanel(restore = true) {
     if ($("panel-backdrop").hidden) return;
     $("panel-backdrop").hidden = true;
+    $("touch-controls").classList.remove("reading");
+    $("info-panel").classList.remove("auto-reading");
+    $("info-panel").classList.remove("canvas-reading");
+    $("info-panel").style.opacity = "";
     currentPanel = null;
-    keys.clear();
+    activeStopKey = null;
+    if (!overlayDriving) keys.clear();
+    overlayDriving = false;
     if (restore && previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
     else canvas.focus?.();
     $("game-announcer").textContent = "Returned to the game world.";
   }
 
   function openMap() {
-    if (!$("panel-backdrop").hidden) return;
+    if (!$("panel-backdrop").hidden) closePanel(false);
+    if (!$("map-backdrop").hidden) return;
     previousFocus = document.activeElement;
     keys.clear();
     pressedTouch.clear();
@@ -595,7 +824,7 @@
 
   function interact() {
     if (!running || !playerNearby || !$("panel-backdrop").hidden || !$("map-backdrop").hidden) return;
-    openPanel(playerNearby.id);
+    openPanel(playerNearby.destination.id, document.activeElement, playerNearby.pageIndex, playerNearby.key);
   }
 
   function startGame() {
@@ -609,7 +838,7 @@
     const key = event.key.toLowerCase();
     const panelOpen = !$("panel-backdrop").hidden;
     const mapOpen = !$("map-backdrop").hidden;
-    if (key === "tab" && (panelOpen || mapOpen)) {
+    if (key === "tab" && (mapOpen || (panelOpen && !overlayDriving))) {
       const dialog = panelOpen ? $("info-panel") : document.querySelector(".map-panel");
       const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), a[href]'));
       const first = focusable[0];
@@ -622,10 +851,15 @@
       }
       return;
     }
-    if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key) && running && !panelOpen && !mapOpen) event.preventDefault();
+    if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key) && running && !mapOpen && (!panelOpen || overlayDriving)) event.preventDefault();
     if (key === "escape") {
       if (panelOpen) closePanel();
       else if (mapOpen) closeMap();
+      return;
+    }
+    if (panelOpen && !overlayDriving && (key === "pageup" || key === "pagedown")) {
+      event.preventDefault();
+      changeSection(key === "pageup" ? -1 : 1);
       return;
     }
     if ((key === "e" || key === "enter") && !panelOpen && !mapOpen) {
@@ -634,17 +868,17 @@
       interact();
       return;
     }
-    if ((key === "m" || key === "tab") && !panelOpen && !mapOpen && running) {
+    if ((key === "m" || key === "tab") && !mapOpen && running && (!panelOpen || overlayDriving)) {
       event.preventDefault();
       openMap();
       return;
     }
-    if (panelOpen && (key === "arrowright" || key === "arrowleft")) {
+    if (panelOpen && !overlayDriving && (key === "arrowright" || key === "arrowleft")) {
       event.preventDefault();
       changePage(key === "arrowright" ? 1 : -1);
       return;
     }
-    if (!panelOpen && !mapOpen && running && ["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) keys.add(key);
+    if ((!panelOpen || overlayDriving) && !mapOpen && running && ["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d", " "].includes(key)) keys.add(key);
   }
 
   function handleKeyUp(event) {
@@ -657,12 +891,22 @@
     renderPanelPage();
   }
 
+  function changeSection(delta) {
+    const index = data.destinations.findIndex((item) => item.id === activeDestination);
+    const next = data.destinations[index + delta];
+    if (next) openPanel(next.id, canvas);
+  }
+
   $("start-button").addEventListener("click", startGame);
+  $("browse-button").addEventListener("click", () => { startGame(); openMap(); });
   $("map-button").addEventListener("click", openMap);
   $("close-panel").addEventListener("click", () => closePanel());
   $("close-map").addEventListener("click", () => closeMap());
   $("prev-page").addEventListener("click", () => changePage(-1));
   $("next-page").addEventListener("click", () => changePage(1));
+  $("prev-section").addEventListener("click", () => changeSection(-1));
+  $("next-section").addEventListener("click", () => changeSection(1));
+  $("back-to-road").addEventListener("click", () => closePanel());
   $("touch-interact").addEventListener("click", interact);
   $("panel-backdrop").addEventListener("click", (event) => {
     if (event.target === $("panel-backdrop")) closePanel();

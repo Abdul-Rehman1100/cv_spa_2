@@ -11,13 +11,12 @@ window.CV_DATA = {
     handle: "abdul-rehman1100"
   },
   destinations: [
-    { id: "about", name: "About me", icon: "✦", x: 480, y: 170, portrait: { x: 300, y: 245 }, label: "About me" },
+    { id: "about", name: "About", icon: "✦", x: 480, y: 170, portrait: { x: 300, y: 245 }, label: "About Abdul-Rehman" },
     { id: "education", name: "Education", icon: "▤", x: 220, y: 465, portrait: { x: 205, y: 665 }, label: "My education" },
-    { id: "contact", name: "Contact me", icon: "◎", x: 480, y: 460, portrait: { x: 300, y: 890 }, label: "Contact me" },
+    { id: "current", name: "Projects & live work", icon: "▣", x: 205, y: 270, portrait: { x: 205, y: 375 }, label: "Projects and live work" },
     { id: "skills", name: "Skills", icon: "⌁", x: 735, y: 475, portrait: { x: 395, y: 665 }, label: "My skills" },
     { id: "goals", name: "Goals", icon: "▦", x: 360, y: 245, portrait: { x: 395, y: 375 }, label: "My goals" },
-    { id: "current", name: "Current work", icon: "▣", x: 205, y: 270, portrait: { x: 205, y: 375 }, label: "Projects I’m working on" },
-    { id: "work", name: "My websites", icon: "⌘", x: 790, y: 360, portrait: { x: 390, y: 515 }, label: "My websites" }
+    { id: "contact", name: "Contact me", icon: "◎", x: 480, y: 460, portrait: { x: 300, y: 890 }, label: "Contact me" }
   ],
   panels: {
     about: {
@@ -59,9 +58,9 @@ window.CV_DATA = {
     work: {
       icon: "⌘", category: "WEBSITE SHOWCASE / LIVE PREVIEWS", title: "My websites",
       pages: [
-        `<div class="website-heading"><div><span class="website-label">LIVE PREVIEW / 01</span><h3>Aero Throne</h3></div><a class="website-open" href="https://aero-throne-website.vercel.app/" target="_blank" rel="noopener noreferrer">Open site ↗</a></div><div class="site-preview"><iframe src="https://aero-throne-website.vercel.app/" title="Live preview of Aero Throne website" aria-hidden="true" tabindex="-1" loading="lazy" scrolling="no" referrerpolicy="no-referrer"></iframe></div><p class="preview-note">If the preview is blocked, open the site in a new tab.</p>`,
-        `<div class="website-heading"><div><span class="website-label">LIVE PREVIEW / 02</span><h3>Campus Cafe</h3></div><a class="website-open" href="https://cit331-lab4-campus-cafe-eta.vercel.app/" target="_blank" rel="noopener noreferrer">Open site ↗</a></div><div class="site-preview"><iframe src="https://cit331-lab4-campus-cafe-eta.vercel.app/" title="Live preview of Campus Cafe website" aria-hidden="true" tabindex="-1" loading="lazy" scrolling="no" referrerpolicy="no-referrer"></iframe></div><p class="preview-note">CIT331 Lab 4 · If the preview is blocked, open the site in a new tab.</p>`,
-        `<div class="website-heading"><div><span class="website-label">LIVE PREVIEW / 03</span><h3>Web Launch</h3></div><a class="website-open" href="https://web-launch-gules.vercel.app/" target="_blank" rel="noopener noreferrer">Open site ↗</a></div><div class="site-preview"><iframe src="https://web-launch-gules.vercel.app/" title="Live preview of Web Launch website" aria-hidden="true" tabindex="-1" loading="lazy" scrolling="no" referrerpolicy="no-referrer"></iframe></div><p class="preview-note">If the preview is blocked, open the site in a new tab.</p>`
+        `<div class="website-showcase"><div class="site-preview"><iframe src="https://aero-throne-website.vercel.app/" title="Live preview of Aero Throne website" loading="lazy" scrolling="yes" referrerpolicy="no-referrer"></iframe></div><div class="website-details"><div class="website-heading"><div><span class="website-label">LIVE PREVIEW / 01</span><h3>Aero Throne</h3></div></div><p>An ergonomic office-chair storefront with product engineering, comfort, and ordering details.</p><ul><li>Explore product features and technical specifications</li><li>Review the posture-support and breathable-mesh highlights</li><li>Browse customer perspectives and the order flow</li></ul><div class="website-tags"><span>Product showcase</span><span>Feature & specs</span><span>Storefront UI</span></div><a class="website-open" href="https://aero-throne-website.vercel.app/" target="_blank" rel="noopener noreferrer">Open full site ↗</a></div></div>`,
+        `<div class="website-showcase"><div class="site-preview"><iframe src="https://cit331-lab4-campus-cafe-eta.vercel.app/" title="Live preview of Campus Café website" loading="lazy" scrolling="yes" referrerpolicy="no-referrer"></iframe></div><div class="website-details"><div class="website-heading"><div><span class="website-label">LIVE PREVIEW / 02</span><h3>Campus Café</h3></div></div><p>A student-focused café site for checking the menu and planning a quick pickup between classes.</p><ul><li>Home, menu, and order sections</li><li>Quick pickup and student-price highlights</li><li>Opening hours and study-space information</li></ul><div class="website-tags"><span>Campus café</span><span>Menu & ordering</span><span>Student focused</span></div><a class="website-open" href="https://cit331-lab4-campus-cafe-eta.vercel.app/" target="_blank" rel="noopener noreferrer">Open full site ↗</a></div></div>`,
+        `<div class="website-showcase"><div class="site-preview"><iframe src="https://web-launch-gules.vercel.app/" title="Live preview of WebLaunch website" loading="lazy" scrolling="yes" referrerpolicy="no-referrer"></iframe></div><div class="website-details"><div class="website-heading"><div><span class="website-label">LIVE PREVIEW / 03</span><h3>WebLaunch</h3></div></div><p>A small-business web services site covering design, hosting, and digital marketing.</p><ul><li>Five service areas with plain-language descriptions</li><li>Work portfolio and interactive starting-estimate calculator</li><li>FAQs and a guided booking path</li></ul><div class="website-tags"><span>Business website</span><span>Service portfolio</span><span>Estimate tool</span></div><a class="website-open" href="https://web-launch-gules.vercel.app/" target="_blank" rel="noopener noreferrer">Open full site ↗</a></div></div>`
       ]
     },
     contact: {
@@ -73,3 +72,9 @@ window.CV_DATA = {
     }
   }
 };
+
+// Keep the primary navigation short. Built project summaries and website previews
+// live together in the Projects destination so visitors can compare them in one place.
+window.CV_DATA.panels.current.title = "Projects & live work";
+window.CV_DATA.panels.current.pages.push(...window.CV_DATA.panels.work.pages);
+delete window.CV_DATA.panels.work;
