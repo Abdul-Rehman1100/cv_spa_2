@@ -100,7 +100,7 @@
     ctx.textAlign = align;
     ctx.textBaseline = "middle";
     ctx.fillStyle = color;
-    ctx.font = `500 ${size}px "DM Mono", Consolas, monospace`;
+    ctx.font = `600 ${size}px "Oxanium", "Cascadia Code", Consolas, monospace`;
     ctx.fillText(value, x, y);
   }
 
@@ -198,9 +198,9 @@
     ctx.font = `600 ${Math.max(12, 12 / displayScale)}px "DM Mono", Consolas, monospace`;
     ctx.fillText(category.toUpperCase(), left, sh * .105 + lift);
     ctx.fillStyle = "#fff0f3";
-    ctx.font = `700 ${Math.max(36, Math.min(80, 52 / displayScale))}px system-ui, sans-serif`;
+    ctx.font = `700 ${Math.max(36, Math.min(80, 52 / displayScale))}px "Space Grotesk", "Segoe UI", sans-serif`;
     ctx.fillText(title, left, sh * .16 + lift, maxWidth);
-    ctx.font = `400 ${Math.max(18, Math.min(38, 17 / displayScale))}px system-ui, sans-serif`;
+    ctx.font = `500 ${Math.max(18, Math.min(38, 17 / displayScale))}px "Space Grotesk", "Segoe UI", sans-serif`;
     ctx.fillStyle = "#fff0f3";
     const fontSize = Math.max(18, Math.min(38, 17 / displayScale));
     const lineHeight = fontSize * 1.55;
@@ -575,7 +575,7 @@
         ctx.beginPath(); ctx.arc(x, y - 34, pulse, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
         ctx.fillStyle = "#fff0f3";
-        ctx.font = '500 10px "DM Mono", Consolas, monospace';
+        ctx.font = '600 10px "Oxanium", "Cascadia Code", Consolas, monospace';
         ctx.textAlign = "center";
         ctx.fillText(String(pageIndex + 1).padStart(2, "0"), x, y - 31);
         continue;
@@ -592,7 +592,7 @@
       }
       const label = destination.name.toUpperCase();
       const labelSize = Math.max(12, Math.min(28, 14 / (window.innerWidth / sceneWidth())));
-      ctx.font = `500 ${labelSize}px "DM Mono", Consolas, monospace`;
+      ctx.font = `600 ${labelSize}px "Oxanium", "Cascadia Code", Consolas, monospace`;
       const signWidth = Math.max(138, ctx.measureText(label).width + 28);
       rect(x - signWidth / 2, y - 66, signWidth, 34, nearby ? "#C9184A" : "#5D1730");
       rect(x - signWidth / 2 + 4, y - 62, signWidth - 8, 26, "#8A2C48");

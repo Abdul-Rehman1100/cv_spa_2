@@ -10,9 +10,9 @@
   --blush: #FFB3C1;
   --light-pink: #FFCCD5;
   --paper: #FFF0F3;
-  --mono: "Cascadia Code", Consolas, monospace;
-  --sans: "Segoe UI", Arial, sans-serif;
-  --pixel: "Press Start 2P", Consolas, monospace;
+  --mono: "DM Mono", "Cascadia Code", Consolas, monospace;
+  --sans: "Space Grotesk", "Segoe UI", Arial, sans-serif;
+  --pixel: "Oxanium", "Cascadia Code", Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -203,7 +203,7 @@ button { color: inherit; }
 }
 .primary-button:hover, .primary-button:focus-visible { transform: translateY(-2px); box-shadow: 0 0 35px rgba(255, 77, 109, .4); outline: 2px solid var(--light-pink); outline-offset: 3px; }
 .primary-button span { margin-left: 11px; color: var(--blush); }
-.start-hint { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 26px; color: #f0c2cd; font: 11px var(--mono); }
+.start-hint { display: block; max-width: 570px; margin: 19px auto 0; color: #f0c2cd; font: 12px/1.8 var(--mono); text-align: center; }
 .start-hint i { padding: 0 5px; color: var(--coral); font-style: normal; }
 
 .start-orbit { position: absolute; width: 340px; height: 340px; border: 1px solid rgba(255, 117, 143, .09); border-radius: 50%; }
