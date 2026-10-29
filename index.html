@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#590D22">
+  <meta name="description" content="Explore Abdul-Rehman's interactive developer CV.">
+  <title>Abdul-Rehman.exe — DevWorld</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/cv-data.js" defer></script>
+  <script src="js/game.js" defer></script>
+</head>
+<body>
+  <main class="game-shell" aria-label="Abdul-Rehman's interactive CV game">
+    <canvas id="world" tabindex="0" aria-label="Game world. Use WASD or arrow keys to explore, then press E to inspect nearby places.">
+      Your browser does not support canvas. Use the destinations menu to explore Abdul-Rehman's CV.
+    </canvas>
+
+    <header class="hud" aria-label="Game status">
+      <a class="identity-chip" href="#" aria-label="Abdul-Rehman, DevWorld home">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span><strong>ABDUL-REHMAN</strong><small>DEVWORLD / LAHORE, PK</small></span>
+      </a>
+      <div class="hud-actions">
+        <span class="discoveries" id="discovery-count">0 / 8 DISCOVERED</span>
+        <button class="hud-button" id="map-button" type="button" aria-haspopup="dialog">⌖ <span>DESTINATIONS</span></button>
+      </div>
+    </header>
+
+    <aside class="control-hint" id="control-hint" aria-label="Game controls">
+      <span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span>
+      <span class="hint-copy">MOVE</span>
+      <span class="keycap keycap-wide">E</span><span class="hint-copy">INSPECT</span>
+    </aside>
+    <div class="nearby-prompt" id="nearby-prompt" aria-live="polite" hidden>
+      <span class="keycap keycap-wide">E</span><span id="nearby-label">Inspect</span>
+    </div>
+
+    <div class="touch-controls" id="touch-controls" aria-label="Touch controls">
+      <div class="dpad" aria-label="Directional controls">
+        <button type="button" data-dir="up" aria-label="Move up">▲</button>
+        <button type="button" data-dir="left" aria-label="Move left">◀</button>
+        <button type="button" data-dir="down" aria-label="Move down">▼</button>
+        <button type="button" data-dir="right" aria-label="Move right">▶</button>
+      </div>
+      <button class="interact-button" id="touch-interact" type="button">INSPECT</button>
+    </div>
+
+    <section class="start-screen" id="start-screen" aria-labelledby="game-title">
+      <div class="start-card">
+        <div class="eyebrow"><span class="status-dot"></span> A SMALL WORLD, A REAL CV</div>
+        <h1 id="game-title">ABDUL-<span>REHMAN</span><b>.EXE</b></h1>
+        <p>Computer science, practical ideas, and a world built one project at a time.</p>
+        <button class="primary-button" id="start-button" type="button">START EXPLORING <span aria-hidden="true">→</span></button>
+        <div class="start-hint"><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> or arrows <i>·</i> <span class="keycap keycap-wide">E</span> to interact</div>
+      </div>
+      <span class="start-orbit orbit-one" aria-hidden="true"></span>
+      <span class="start-orbit orbit-two" aria-hidden="true"></span>
+      <div class="start-pixels" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <section class="panel-backdrop" id="panel-backdrop" hidden>
+      <article class="info-panel" id="info-panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+        <div class="panel-topline"><span class="panel-kicker"><span class="status-dot"></span> FIELD NOTES / <span id="panel-count">01</span></span><button class="close-button" id="close-panel" type="button" aria-label="Close panel">×</button></div>
+        <div class="panel-icon" id="panel-icon" aria-hidden="true">✦</div>
+        <p class="panel-category" id="panel-category"></p>
+        <h2 id="panel-title"></h2>
+        <div class="panel-content" id="panel-content"></div>
+        <div class="panel-footer">
+          <div class="page-dots" id="page-dots" aria-label="Panel pages"></div>
+          <div class="panel-navigation"><button class="page-button" id="prev-page" type="button" aria-label="Previous page">←</button><span id="page-count">01 / 01</span><button class="page-button" id="next-page" type="button" aria-label="Next page">→</button></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="map-backdrop" id="map-backdrop" hidden>
+      <article class="map-panel" role="dialog" aria-modal="true" aria-labelledby="map-title">
+        <div class="panel-topline"><span class="panel-kicker"><span class="status-dot"></span> POCKET MAP</span><button class="close-button" id="close-map" type="button" aria-label="Close destinations">×</button></div>
+        <h2 id="map-title">Choose a destination</h2>
+        <p class="map-intro">Explore on foot, or jump straight to any part of my CV.</p>
+        <nav class="destination-list" id="destination-list" aria-label="CV destinations"></nav>
+        <div class="map-footnote">All destinations are open. Your discoveries: <strong id="map-discovery-count">0 / 8</strong></div>
+      </article>
+    </section>
+
+    <div class="sr-only" id="game-announcer" aria-live="polite"></div>
+  </main>
+</body>
+</html>
