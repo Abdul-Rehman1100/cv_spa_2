@@ -22,7 +22,8 @@
     { x: 424, y: 548, w: 36, h: 28 }, { x: 500, y: 548, w: 36, h: 28 },
     { x: 144, y: 207, w: 100, h: 43 }, { x: 315, y: 177, w: 100, h: 62 },
     { x: 619, y: 180, w: 100, h: 61 }, { x: 761, y: 306, w: 92, h: 67 },
-    { x: 143, y: 367, w: 159, h: 61 }, { x: 434, y: 470, w: 92, h: 79 }
+    { x: 143, y: 367, w: 159, h: 61 }, { x: 434, y: 470, w: 92, h: 79 },
+    { x: 670, y: 410, w: 100, h: 62 }
   ];
   const portraitSolids = [
     { x: 98, y: 303, w: 100, h: 63 }, { x: 400, y: 303, w: 100, h: 63 },
@@ -139,22 +140,22 @@
     rect(199, 157, 202, 59, "#300A18");
     rect(206, 164, 188, 45, "#421025");
     rect(214, 172, 172, 2, "#FF4D6D");
-    text("QARSHI / DEV CAMPUS", 300, 184, "#FFB3C1", 8);
-    text("WELCOME, EXPLORER", 300, 198, "#FF758F", 6);
+    text("QARSHI / DEV CAMPUS", 300, 184, "#FFB3C1", 11);
+    text("WELCOME, EXPLORER", 300, 198, "#FF758F", 9);
     rect(226, 217, 8, 24, "#871F3C");
     rect(366, 217, 8, 24, "#871F3C");
 
-    drawDesk(104, 306, "PRINT / SAFE", "#FF758F");
-    drawDesk(400, 306, "SCHEDULE", "#FFB3C1");
-    drawDesk(104, 451, "COURSE / DB", "#FF758F");
-    drawArcade(405, 449);
+    drawDesk(104, 306, "PROJECT LAB", "#FF758F");
+    drawDesk(400, 306, "GOALS / BOARD", "#FFB3C1");
+    drawDesk(104, 451, "CODE / NOTES", "#FF758F");
+    drawWebGallery(405, 449);
     drawEducationPortrait();
     drawDesk(400, 602, "SKILLS / LAB", "#FFB3C1");
     drawPortalPortrait();
     drawPlantersPortrait();
-    text("PROJECT LAB", 300, 291, "rgba(255,204,213,.55)", 7);
-    text("BUILD / LEARN / REPEAT", 300, 575, "rgba(255,204,213,.45)", 6);
-    text("LAHORE, PAKISTAN", 300, 916, "rgba(255,204,213,.5)", 7);
+    text("PROJECT LAB", 300, 291, "rgba(255,204,213,.85)", 11);
+    text("BUILD / LEARN / REPEAT", 300, 575, "rgba(255,204,213,.75)", 10);
+    text("LAHORE, PAKISTAN", 300, 916, "rgba(255,204,213,.85)", 10);
     drawStations();
     drawPlayer();
   }
@@ -164,8 +165,8 @@
     rect(110, 563, 142, 39, "#77203B");
     rect(117, 569, 128, 27, "#36101E");
     rect(122, 574, 118, 17, "#8C3150");
-    text("STUDY CORNER", 181, 580, "#FFF0F3", 7);
-    text("QARSHI UNIVERSITY", 181, 589, "#FFB3C1", 5);
+    text("STUDY CORNER", 181, 580, "#FFF0F3", 10);
+    text("QARSHI UNIVERSITY", 181, 589, "#FFB3C1", 8);
     rect(125, 600, 6, 18, "#63203A");
     rect(231, 600, 6, 18, "#63203A");
   }
@@ -185,7 +186,7 @@
     rect(280, 826, 40, 49, "#FF758F");
     rect(286, 832, 28, 43, "#590D22");
     rect(292, 838, 16, 37, "#FFB3C1");
-    text("CONTACT", 300, 891, "#FFCCD5", 6);
+    text("CONTACT", 300, 891, "#FFCCD5", 10);
   }
 
   function drawPlantersPortrait() {
@@ -285,8 +286,8 @@
     rect(385, 93, 190, 62, "#67142F");
     rect(391, 99, 178, 50, "#421025");
     rect(400, 107, 160, 2, "#FF4D6D");
-    text("QARSHI / DEV CAMPUS", 480, 119, "#FFB3C1", 9);
-    text("WELCOME, EXPLORER", 480, 136, "#FF758F", 7);
+    text("QARSHI / DEV CAMPUS", 480, 119, "#FFB3C1", 11);
+    text("WELCOME, EXPLORER", 480, 136, "#FF758F", 9);
     rect(396, 152, 8, 46, "#871F3C");
     rect(556, 152, 8, 46, "#871F3C");
     rect(408, 155, 16, 43, "#320B1B");
@@ -296,10 +297,11 @@
   }
 
   function drawWorkstations() {
-    drawDesk(150, 216, "PRINT / SAFE", "#FF758F");
-    drawDesk(321, 187, "SCHEDULE", "#FFB3C1");
-    drawDesk(625, 190, "COURSE / DB", "#FF758F");
-    drawArcade(766, 300);
+    drawDesk(150, 216, "PROJECT LAB", "#FF758F");
+    drawDesk(321, 187, "GOALS / BOARD", "#FFB3C1");
+    drawDesk(625, 190, "CODE / NOTES", "#FF758F");
+    drawWebGallery(766, 300);
+    drawDesk(680, 413, "SKILLS / LAB", "#FFB3C1");
   }
 
   function drawDesk(x, y, label, glow) {
@@ -317,21 +319,22 @@
     ctx.globalAlpha = .14;
     rect(x + 23, y - 8, 42, 25, glow);
     ctx.globalAlpha = 1;
-    text(label, x + 44, y + 51, "#FFB3C1", 7);
+    text(label, x + 44, y + 51, "#FFCCD5", 12);
   }
 
-  function drawArcade(x, y) {
+  function drawWebGallery(x, y) {
     rect(x - 5, y + 64, 92, 9, "#31101C");
     rect(x, y + 6, 82, 59, "#741A38");
     rect(x + 6, y + 12, 70, 47, "#A32C4B");
     rect(x + 12, y + 18, 58, 31, "#310E1D");
-    rect(x + 16, y + 22, 50, 23, "#5B1831");
-    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
-      rect(x + 20 + i * 14, y + 25 + j * 6, 9, 4, (i + j) % 2 ? "#FF758F" : "#C9184A");
-    }
-    rect(x + 19, y + 52, 11, 3, "#FFCCD5");
-    rect(x + 54, y + 52, 11, 3, "#FF4D6D");
-    text("BOT ARCADE", x + 41, y + 81, "#FFB3C1", 7);
+    rect(x + 12, y + 18, 58, 5, "#FF758F");
+    rect(x + 16, y + 26, 22, 16, "#FF4D6D");
+    rect(x + 41, y + 26, 25, 3, "#FFCCD5");
+    rect(x + 41, y + 32, 21, 2, "#FF8FA3");
+    rect(x + 41, y + 37, 24, 2, "#A86A7A");
+    rect(x + 16, y + 46, 49, 3, "#FFB3C1");
+    rect(x + 16, y + 52, 36, 3, "#C9184A");
+    text("MY WEBSITES", x + 41, y + 81, "#FFCCD5", 11);
   }
 
   function drawEducationBoard() {
@@ -339,8 +342,8 @@
     rect(143, 367, 159, 49, "#77203B");
     rect(150, 373, 145, 37, "#36101E");
     rect(156, 378, 133, 27, "#8C3150");
-    text("STUDY CORNER", 222, 386, "#FFF0F3", 8);
-    text("QARSHI UNIVERSITY", 222, 398, "#FFB3C1", 6);
+    text("STUDY CORNER", 222, 386, "#FFF0F3", 11);
+    text("QARSHI UNIVERSITY", 222, 398, "#FFB3C1", 9);
     rect(160, 409, 6, 19, "#63203A");
     rect(279, 409, 6, 19, "#63203A");
   }
@@ -361,7 +364,7 @@
     rect(464, 500, 32, 48, "#590D22");
     rect(470, 506, 20, 42, "#FFB3C1");
     rect(476, 512, 8, 36, "#FFF0F3");
-    text("CONTACT", 480, 564, "#FFCCD5", 7);
+    text("CONTACT", 480, 564, "#FFCCD5", 11);
   }
 
   function drawDecor() {
@@ -378,8 +381,8 @@
     rect(82, 475, 6, 28, "#6D1B36");
     rect(872, 457, 6, 28, "#6D1B36");
     rect(925, 457, 6, 28, "#6D1B36");
-    text("BUILD / LEARN / REPEAT", 480, 229, "rgba(255,204,213,.38)", 7);
-    text("L A H O R E", 480, 583, "rgba(255,204,213,.44)", 7);
+    text("BUILD / LEARN / REPEAT", 480, 229, "rgba(255,204,213,.75)", 10);
+    text("L A H O R E", 480, 583, "rgba(255,204,213,.8)", 10);
   }
 
   function drawStations() {
@@ -388,22 +391,24 @@
       const found = discovered.has(destination.id);
       const { x, y } = destinationPosition(destination);
       if (nearby) {
-        const pulse = 15 + Math.sin(elapsed * 5) * 2;
+        const pulse = 17 + Math.sin(elapsed * 5) * 2;
         ctx.strokeStyle = "rgba(255,117,143,.55)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.arc(x, y, pulse, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.shadowColor = "#FF4D6D";
+        ctx.shadowBlur = 12;
       }
+      rect(x - 10, y - 39, 20, 19, nearby ? "#C9184A" : "#5D1730");
+      rect(x - 8, y - 37, 16, 15, nearby ? "#FF4D6D" : "#8A2C48");
+      text(destination.icon, x, y - 29, "#FFF0F3", 11);
+      ctx.shadowBlur = 0;
       if (found) {
         ctx.fillStyle = "#FF4D6D";
         ctx.beginPath();
         ctx.arc(x + 15, y - 15, 3, 0, Math.PI * 2);
         ctx.fill();
-      }
-      if (!["printsafe", "timetable", "course", "tictactoe", "education", "contact"].includes(destination.id)) {
-        const color = nearby ? "#FFF0F3" : "#FFB3C1";
-        text(destination.icon, x, y, color, 12);
       }
     }
   }
@@ -447,10 +452,10 @@
   function update(dt) {
     let dx = 0;
     let dy = 0;
-    if (keys.has("ArrowLeft") || keys.has("a") || pressedTouch.has("left")) dx -= 1;
-    if (keys.has("ArrowRight") || keys.has("d") || pressedTouch.has("right")) dx += 1;
-    if (keys.has("ArrowUp") || keys.has("w") || pressedTouch.has("up")) dy -= 1;
-    if (keys.has("ArrowDown") || keys.has("s") || pressedTouch.has("down")) dy += 1;
+    if (keys.has("arrowleft") || keys.has("a") || pressedTouch.has("left")) dx -= 1;
+    if (keys.has("arrowright") || keys.has("d") || pressedTouch.has("right")) dx += 1;
+    if (keys.has("arrowup") || keys.has("w") || pressedTouch.has("up")) dy -= 1;
+    if (keys.has("arrowdown") || keys.has("s") || pressedTouch.has("down")) dy += 1;
     const length = Math.hypot(dx, dy);
     player.moving = length > 0;
     if (length) {
@@ -530,6 +535,10 @@
 
   function renderPanelPage() {
     $("panel-content").innerHTML = currentPanel.pages[currentPage];
+    $("info-panel").classList.toggle("contact-panel", activeDestination === "contact");
+    $("info-panel").classList.toggle("website-panel", activeDestination === "work");
+    $("info-panel").classList.toggle("goals-panel", activeDestination === "goals");
+    $("info-panel").classList.toggle("projects-panel", activeDestination === "current");
     const pageTotal = currentPanel.pages.length;
     $("page-count").textContent = `${String(currentPage + 1).padStart(2, "0")} / ${String(pageTotal).padStart(2, "0")}`;
     $("panel-count").textContent = String(data.destinations.findIndex((item) => item.id === activeDestination) + 1).padStart(2, "0");
@@ -660,6 +669,20 @@
   });
   $("map-backdrop").addEventListener("click", (event) => {
     if (event.target === $("map-backdrop")) closeMap();
+  });
+  $("panel-content").addEventListener("submit", (event) => {
+    const form = event.target.closest("#contact-form");
+    if (!form) return;
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const fields = new FormData(form);
+    const name = fields.get("name").toString().trim();
+    const email = fields.get("email").toString().trim();
+    const message = fields.get("message").toString().trim();
+    const subject = `Message from ${name}`;
+    const body = `Hi Abdul-Rehman,\n\n${message}\n\nYou can reply to me at: ${email}`;
+    window.location.href = `mailto:${data.profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    $("game-announcer").textContent = "Your email draft is ready to open in your email app.";
   });
   document.querySelectorAll(".dpad button").forEach((button) => {
     const direction = button.dataset.dir;
